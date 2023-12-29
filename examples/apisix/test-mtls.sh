@@ -1,12 +1,11 @@
-#!/usr/bin/env bash
-set -euo pipefail
-set -x
+#!/usr/bin/env burl
 
-script_path=$(dirname "$0")
+# configure apisix
+TEST_PORT=9443
 
-. ${script_path}/common.sh
 
-echo TEST 1: no client cert, ssl handshake failed
+
+TEST 1: no client cert, ssl handshake failed
 
 ADMIN put /routes/1 -d '
 {
@@ -21,13 +20,13 @@ ADMIN put /routes/1 -d '
 }'
 
 ADMIN put /ssls/1 -d '{
-    "cert": "'"$(<${script_path}/server.crt)"'",
-    "key": "'"$(<${script_path}/server.key)"'",
+    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
     "snis": [
         "localhost"
     ],
     "client": {
-        "ca": "'"$(<${script_path}/ca.crt)"'",
+        "ca": "'"$(<${BURL_ROOT}/examples/ca.crt)"'",
         "depth": 10
     }
 }'
@@ -47,16 +46,16 @@ set -e
 
 
 
-echo TEST 2: route-level mtls, skip mtls
+TEST 2: route-level mtls, skip mtls
 
 ADMIN put /ssls/1 -d '{
-    "cert": "'"$(<${script_path}/server.crt)"'",
-    "key": "'"$(<${script_path}/server.key)"'",
+    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
     "snis": [
         "localhost"
     ],
     "client": {
-        "ca": "'"$(<${script_path}/ca.crt)"'",
+        "ca": "'"$(<${BURL_ROOT}/examples/ca.crt)"'",
         "depth": 10,
         "skip_mtls_uri_regex": [
             "/httpbin/get"
@@ -69,18 +68,18 @@ sleep 1
 REQ /httpbin/get --http3-only
 
 # validate the response headers
-GREP -x "HTTP/3 200"
+HEADER -x "HTTP/3 200"
 
 # validate the response body, e.g. JSON body
 JQ '.headers["X-Forwarded-Host"] == "localhost"'
 
 
 
-echo TEST 3: route-level mtls, not in whitelist, cannot skip mtls
+TEST 3: route-level mtls, not in whitelist, cannot skip mtls
 
 set +e
 REQ /httpbin/foobar --http3-only
 set -e
 
 # validate the response headers
-GREP -x "HTTP/3 400"
+HEADER -x "HTTP/3 400"

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export BURL_ROOT="$(dirname `realpath $0`)"
+
+has_tests=''
+RUN_TEST_FILE() {
+    has_tests=true
+    (
+        set -o pipefail
+        set -eux
+        . ${BURL_ROOT}/common.sh
+        . "$@"
+        echo "--- $1 OK"
+    )
+}
+
+if [[ $# == 0 ]]; then
+    if [[ -d ./t ]]; then
+        for ff in ./t/test-*.sh; do
+            RUN_TEST_FILE "${ff}"
+        done
+    fi
+else
+    for f in "$@"; do
+        if [[ -d $f ]]; then
+            for ff in $f/test-*.sh; do
+                RUN_TEST_FILE "${ff}"
+            done
+        elif [[ -f $f ]]; then
+            RUN_TEST_FILE "$f"
+        fi
+    done
+fi
+
+if [[ "$has_tests" == true ]]; then
+    echo -e "\nAll tests successful! ;-)"
+else
+    echo -e "No tests found. :-("
+fi

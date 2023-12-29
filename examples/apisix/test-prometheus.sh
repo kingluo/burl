@@ -1,10 +1,19 @@
-#!/usr/bin/env bash
-set -euo pipefail
-set -x
+#!/usr/bin/env burl
 
-. $(dirname "$0")/common.sh
+# configure apisix
+TEST_PORT=9443
 
-echo TEST 1: test if prometheus works
+ADMIN put /ssls/1 -d '{
+    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
+    "snis": [
+        "localhost"
+    ]
+}'
+
+
+
+TEST 1: test if prometheus works
 
 # configure apisix
 ADMIN put /routes/1 -s -d '{
@@ -24,7 +33,7 @@ ADMIN put /routes/1 -s -d '{
 REQ /anything/foobar --http3-only
 
 # validate the response headers
-GREP -x "HTTP/3 404"
+HEADER -x "HTTP/3 404"
 
 count_404() {
     curl http://127.0.0.1:9091/apisix/prometheus/metrics 2>&1 | \

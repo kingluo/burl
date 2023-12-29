@@ -1,12 +1,16 @@
-#!/usr/bin/env bash
-set -euo pipefail
-set -x
-
-. $(dirname "$0")/common.sh
-
-echo TEST 1: test if limit-count works
+#!/usr/bin/env burl
 
 # configure apisix
+TEST_PORT=9443
+
+ADMIN put /ssls/1 -d '{
+    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
+    "snis": [
+        "localhost"
+    ]
+}'
+
 ADMIN put /routes/1 -s -d '{
     "uri": "/httpbin/*",
     "plugins": {
@@ -27,23 +31,27 @@ ADMIN put /routes/1 -s -d '{
     }
 }'
 
+
+
+TEST 1: test if limit-count works
+
 # consume the quota
 for ((i=0;i<2;i++)); do
     # send request
     REQ /httpbin/get -X GET --http3-only
 
     # validate the response headers
-    GREP -ix "HTTP/3 200"
+    HEADER -ix "HTTP/3 200"
 done
 
 # no quota
 REQ /httpbin/get -X GET --http3-only
-GREP -x "HTTP/3 503"
-GREP -ix "x-ratelimit-remaining: 0"
+HEADER -x "HTTP/3 503"
+HEADER -ix "x-ratelimit-remaining: 0"
 
 # wait for quota recovery
 sleep 5
 
 REQ /httpbin/get -X GET --http3-only
-GREP -x "HTTP/3 200"
-GREP -ix "x-ratelimit-remaining: 1"
+HEADER -x "HTTP/3 200"
+HEADER -ix "x-ratelimit-remaining: 1"
