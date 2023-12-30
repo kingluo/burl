@@ -113,11 +113,3 @@ HEADER -x "Content-Type: application/xml"
 
 # validate the response body, e.g. XML body
 XML 'body["slideshow"]["@author"]=="Yours Truly"'
-
-
-
-TEST 7: test a simple Web Service: Add two numbers: 1+2==3
-
-SOAP_REQ \
-    'https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx?WSDL' \
-    Add `jo a=1 b=2` '.==3'
