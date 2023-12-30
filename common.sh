@@ -49,6 +49,7 @@ GC_CLEANUP() {
 GC "rm -f ${CURL_TMP}{,-headers,-body}"
 trap GC_CLEANUP EXIT INT TERM
 
+echo  ${BURL_ROOT}/common.d/*.sh
 for ext in ${BURL_ROOT}/common.d/*.sh; do
     . $ext
 done

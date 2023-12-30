@@ -3,13 +3,13 @@ if ! pip3 show xmltodict &>/dev/null; then
     echo 'Use `pip3 install xmltodict` to install it.'
 fi
 
-XMLTODICT='
+SET XMLTODICT <<'EOF'
 import sys
 import xmltodict
 with open(sys.argv[1]) as fd:
     body=xmltodict.parse(fd.read())
 exit(eval(sys.argv[2]))
-'
+EOF
 
 XML() {
     set +e
