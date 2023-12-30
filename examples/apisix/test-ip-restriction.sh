@@ -4,8 +4,8 @@
 TEST_PORT=9443
 
 ADMIN put /ssls/1 -d '{
-    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
-    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
+    "cert": "'"$(<${BURL_ROOT}/examples/certs/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/certs/server.key)"'",
     "snis": [
         "localhost"
     ]

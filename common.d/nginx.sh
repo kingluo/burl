@@ -38,8 +38,8 @@ http {
         listen 0.0.0.0:443 quic reuseport;
         listen [::]:443 quic reuseport;
 
-        ssl_certificate      {{BURL_ROOT}}/examples/server.crt;
-        ssl_certificate_key  {{BURL_ROOT}}/examples/server.key;
+        ssl_certificate      {{BURL_ROOT}}/examples/certs/server.crt;
+        ssl_certificate_key  {{BURL_ROOT}}/examples/certs/server.key;
 
         location /hello {
             return 200 "hello";

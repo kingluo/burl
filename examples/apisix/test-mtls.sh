@@ -20,13 +20,13 @@ ADMIN put /routes/1 -d '
 }'
 
 ADMIN put /ssls/1 -d '{
-    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
-    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
+    "cert": "'"$(<${BURL_ROOT}/examples/certs/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/certs/server.key)"'",
     "snis": [
         "localhost"
     ],
     "client": {
-        "ca": "'"$(<${BURL_ROOT}/examples/ca.crt)"'",
+        "ca": "'"$(<${BURL_ROOT}/examples/certs/ca.crt)"'",
         "depth": 10
     }
 }'
@@ -49,13 +49,13 @@ set -e
 TEST 2: route-level mtls, skip mtls
 
 ADMIN put /ssls/1 -d '{
-    "cert": "'"$(<${BURL_ROOT}/examples/server.crt)"'",
-    "key": "'"$(<${BURL_ROOT}/examples/server.key)"'",
+    "cert": "'"$(<${BURL_ROOT}/examples/certs/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/certs/server.key)"'",
     "snis": [
         "localhost"
     ],
     "client": {
-        "ca": "'"$(<${BURL_ROOT}/examples/ca.crt)"'",
+        "ca": "'"$(<${BURL_ROOT}/examples/certs/ca.crt)"'",
         "depth": 10,
         "skip_mtls_uri_regex": [
             "/httpbin/get"
