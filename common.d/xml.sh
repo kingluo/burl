@@ -1,8 +1,3 @@
-if ! pip3 show xmltodict &>/dev/null; then
-    echo "Python module `xmltodict` not exist."
-    echo 'Use `pip3 install xmltodict` to install it.'
-fi
-
 SET XMLTODICT <<'EOF'
 import sys
 import xmltodict

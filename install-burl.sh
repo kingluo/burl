@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /usr/local
-git clone https://github.com/kingluo/burl
-ln -sf /usr/local/burl/burl /usr/local/bin
-
 install_deps() {
     for dep in "$@"; do
         if !which $1 &>/dev/null; then
@@ -18,7 +14,24 @@ install_deps() {
     done
 }
 
+pip3_install() {
+    for m in "$@"; do
+        if ! pip3 show $m &>/dev/null; then
+            echo "Python module `$m` not exist."
+            read -p "install? [y/N]: " ok
+            if [[ "$ok" == "Y" ]]; then
+                pip3 install $m
+            fi
+        fi
+    done
+}
+
+cd /usr/local
+git clone https://github.com/kingluo/burl
+ln -sf /usr/local/burl/burl /usr/local/bin
+
 install_deps jo jq
+pip3_install zeep xmltodict
 
 if ! curl --version | grep http3 &>/dev/null; then
     echo "current curl version doesn't support http3."

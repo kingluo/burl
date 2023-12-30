@@ -1,8 +1,3 @@
-if ! pip3 show zeep &>/dev/null; then
-    echo "Python module `zeep` not exist."
-    echo 'Use `pip3 install zeep` to install it.'
-fi
-
 SET ZEEP <<'EOF'
 #!/usr/bin/env python3
 
