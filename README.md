@@ -4,9 +4,174 @@ A simple but flexible HTTP/3 testing framework based on bash and curl.
 
 ## Design
 
+1. The test file contains one or more test cases, and an optional initial part of the file header, such as configuring nginx.conf and starting nginx via template rendering.
+2. Each test case consists of three parts:
+    1. Construct and send the request, and save the response header and response body to files for subsequent steps.
+    2. Verify the response headers, for example using "grep".
+    3. Parse and validate the response body, for example with the "jq" expression.
+3. **Easily extensible**, you can validate responses (steps ii and iii) using any command or other advanced script, such as Python.
+4. **Failure of any command will stop the testing process (enabled via the "set -euo pipefail" bash option).**
+5. The test process is echoed by default (enabled via the "set -x" bash option).
+
 ## Synopsis
 
+```bash
+#!/usr/bin/env burl
+
+# Optional initialization here...
+# Before all test cases are executed.
+# For example, render nginx.conf and start nginx.
+SET NGX_CONF_HTTP <<EOF
+upstream test_backend {
+    server $(dig +short nghttp2.org):443;
+
+    keepalive 320;
+    keepalive_requests 1000;
+    keepalive_timeout 60s;
+}
+EOF
+
+SET NGX_CONF <<'EOF'
+location / {
+    add_header Alt-Svc 'h3=":443"; ma=86400';
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host "nghttp2.org";
+    proxy_pass https://test_backend;
+}
+EOF
+
+START_NGX
+
+TEST 1: test case
+
+# Send request
+# REQ is a curl wrapper so you can apply any curl options to suit your needs.
+# Check https://curl.se/docs/manpage.html for details.
+REQ /httpbin/anything --http3 -d foo=bar -d hello=world
+
+# Validate the response headers
+# HEADER is a grep wrapper so you can apply any grep options and regular expressions to suit your needs.
+HEADER -x "HTTP/3 200"
+
+# Validate the response body, e.g. JSON body
+# JQ is a jq wrapper so you can apply any jq options and jq expression to suit your needs.
+JQ '.method=="POST"'
+JQ '.form=={"foo":"bar","hello":"world"}'
+
+TEST 2: another test case
+# ...
+
+# More test cases...
+```
+
 ## Examples
+
+### APISIX
+
+1. Test MTLS whitelist
+
+```bash
+TEST 2: route-level mtls, skip mtls
+
+ADMIN put /ssls/1 -d '{
+    "cert": "'"$(<${BURL_ROOT}/examples/certs/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/certs/server.key)"'",
+    "snis": [
+        "localhost"
+    ],
+    "client": {
+        "ca": "'"$(<${BURL_ROOT}/examples/certs/ca.crt)"'",
+        "depth": 10,
+        "skip_mtls_uri_regex": [
+            "/httpbin/get"
+        ]
+    }
+}'
+
+sleep 1
+
+REQ /httpbin/get --http3-only
+
+# validate the response headers
+HEADER -x "HTTP/3 200"
+
+# validate the response body, e.g. JSON body
+JQ '.headers["X-Forwarded-Host"] == "localhost"'
+```
+
+2. Test HTTP/3 Alt-Svc
+
+```bash
+ADMIN put /ssls/1 -d '{
+    "cert": "'"$(<${BURL_ROOT}/examples/certs/server.crt)"'",
+    "key": "'"$(<${BURL_ROOT}/examples/certs/server.key)"'",
+    "snis": [
+        "localhost"
+    ]
+}'
+
+ADMIN put /routes/1 -s -d '{
+    "uri": "/httpbin/*",
+    "upstream": {
+        "scheme": "https",
+        "type": "roundrobin",
+        "nodes": {
+            "nghttp2.org": 1
+        }
+    }
+}'
+
+
+
+TEST 1: check if alt-svc works
+
+altsvc_cache=$(mktemp)
+GC "rm -f ${altsvc_cache}"
+
+REQ /httpbin/get -k --alt-svc ${altsvc_cache}
+HEADER -x "HTTP/1.1 200 OK"
+
+REQ /httpbin/get -k --alt-svc ${altsvc_cache}
+HEADER -x "HTTP/3 200"
+
+```
+
+### SOAP
+
+Send a SOAP request to the web service and verify the response.
+
+Construct JSON input using `jo` and validate JSON output using `jq` expressions.
+
+Powered by Python [zeep](https://docs.python-zeep.org/en/master/).
+
+```bash
+TEST 1: test a simple Web Service: Add two numbers: 1+2==3
+
+SOAP_REQ \
+    'https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx?WSDL' \
+    Add `jo a=1 b=2` '.==3'
+
+```
+
+### XML
+
+Powered by [xmltodict](https://pypi.org/project/xmltodict/).
+
+```bash
+TEST 2: GET XML
+
+# send request
+REQ /httpbin/xml
+
+# validate the response headers
+HEADER -x "HTTP/1.1 200 OK"
+HEADER -x "Content-Type: application/xml"
+
+# validate the response XML body
+XML '.slideshow["@author"]=="Yours Truly"'
+
+```
 
 ## Common Functions
 
