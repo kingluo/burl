@@ -2,6 +2,10 @@
 
 A simple but flexible HTTP/3 testing framework based on bash and curl.
 
+Check out the blog post for background and design details:
+
+http://luajit.io/posts/a-simple-http3-testing-framework-based-on-bash-and-curl/
+
 ## Design
 
 1. The test file contains one or more test cases, and an optional initial part of the file header, such as configuring nginx.conf and starting nginx via template rendering.
