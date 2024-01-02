@@ -15,6 +15,10 @@ A simple but flexible HTTP/3 testing framework based on bash and curl.
 
 ## Installation
 
+```bash
+curl -s https://raw.githubusercontent.com/kingluo/burl/main/install-burl.sh |bash
+```
+
 ## Usage
 
 Use shebang (`#!`) or run the burl command:
