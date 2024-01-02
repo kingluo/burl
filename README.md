@@ -90,6 +90,8 @@ TEST 2: another test case
 
 ## Examples
 
+Check [examples](examples).
+
 ### APISIX
 
 1. Test MTLS whitelist
