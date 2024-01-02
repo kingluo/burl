@@ -13,7 +13,22 @@ A simple but flexible HTTP/3 testing framework based on bash and curl.
 4. **Failure of any command will stop the testing process (enabled via the "set -euo pipefail" bash option).**
 5. The test process is echoed by default (enabled via the "set -x" bash option).
 
-## Synopsis
+## Installation
+
+## Usage
+
+Use shebang (`#!`) or run the burl command:
+
+```
+# specify the test files or dirs
+# for dir, burl will find the test files recursively under the dir
+burl <test-file1> <test-file2> <dir1> <dir2> ...
+
+# run burl directly, it will try to find test files in ./t
+burl
+```
+
+Test case template:
 
 ```bash
 #!/usr/bin/env burl
