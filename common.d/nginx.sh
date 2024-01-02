@@ -41,10 +41,6 @@ http {
         ssl_certificate      {{BURL_ROOT}}/examples/certs/server.crt;
         ssl_certificate_key  {{BURL_ROOT}}/examples/certs/server.key;
 
-        location /hello {
-            return 200 "hello";
-        }
-
         %s
     }
 }
