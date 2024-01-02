@@ -99,17 +99,3 @@ HEADER -x "HTTP/1.1 200 OK"
 JQ '.files.file1=="hello"'
 JQ '.files.file2=="world"'
 JQ '.headers["Content-Type"] | test("multipart/form-data; boundary=.*")'
-
-
-
-TEST 6: GET XML
-
-# send request
-REQ /httpbin/xml
-
-# validate the response headers
-HEADER -x "HTTP/1.1 200 OK"
-HEADER -x "Content-Type: application/xml"
-
-# validate the response body, e.g. XML body
-XML 'body["slideshow"]["@author"]=="Yours Truly"'

@@ -1,16 +1,12 @@
-SET XMLTODICT <<'EOF'
+SET XMLTOJSON <<'EOF'
+import json
 import sys
 import xmltodict
 with open(sys.argv[1]) as fd:
     body=xmltodict.parse(fd.read())
-exit(eval(sys.argv[2]))
+    print(json.dumps(body))
 EOF
 
 XML() {
-    set +e
-    python3 -c "${XMLTODICT}" "${CURL_RSP_BODY}" "$@"
-    local ret=$?
-    set -e
-    [[ $ret -eq 1 ]]
+    python3 -c "${XMLTOJSON}" "${CURL_RSP_BODY}" | jq "$@"
 }
-
